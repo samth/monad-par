@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds, Rank2Types #-}
+{-# LANGUAGE TypeFamilies, DataKinds, Rank2Types #-}
 
 -- | Test how much a (useless) StateT transformer screws up optimizations and adds
 -- overheads, if at all.
@@ -14,9 +14,9 @@ import Control.Par.Class
 import Control.Par.StateT
 import qualified Control.Monad.State.Strict as S
 
-type Par d s a = S.StateT () (L.Par d s) a
+type Par e s a = S.StateT () (L.Par e s) a
 
-runPar :: (forall s . Par L.Det s a) -> a
+runPar :: (forall s . Par (L.Ef L.P L.G L.NF L.B L.NI) s a) -> a
 runPar m =
   L.runPar $ 
   S.evalStateT m ()
