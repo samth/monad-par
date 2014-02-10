@@ -140,7 +140,8 @@ parfibRange ss =
   [ (mkBenchmark ("src/parfib/generated.cabal") ["monad",arg] (futures ss)) 
       { progname= Just "microbench_parfib"
       , benchTimeOut= Just 6.0 }
-  | arg <- map show [30,31,32,33,34,35,36,37,38,39,40]
+--  | arg <- map show [30,31,32,33,34,35,36,37,38,39,40]
+  | arg <- map show [33] -- Restricting to one setting for now [2014.02.10]
   ]
 
 -- # Version: server 1.6
