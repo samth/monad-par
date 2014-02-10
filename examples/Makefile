@@ -48,10 +48,10 @@ clean:
 # TODO -- should probably merge this with 'validate'.
 # But right now it's SOO much faster than using cabal that it's nice to have around:
 test: deps runner
-	./run_benchmark
+	./run_benchmark_monadpar
 
-runner: dist/build/run_benchmark/run_benchmark
-dist/build/run_benchmark/run_benchmark: run_benchmark.hs run_benchmark.cabal
+runner: dist/build/run_benchmark/run_benchmark_monadpar
+dist/build/run_benchmark/run_benchmark_monadpar: run_benchmark.hs run_benchmark.cabal
 	$(CABAL) install --only-dependencies -j 
 	$(CABAL) build
 
