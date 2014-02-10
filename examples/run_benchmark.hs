@@ -15,6 +15,7 @@ module Main where
 
 import qualified Data.Set as S
 
+import Control.Exception  (evaluate)
 import GHC.Conc           (getNumProcessors)
 import System.Environment (getEnvironment, getArgs, withArgs)
 import System.IO.Unsafe   (unsafePerformIO)
@@ -35,6 +36,7 @@ data Mode = Server | Desktop | Quick      deriving (Show,Eq)
 data Flag = SetMode Mode
           | SetSched Sched
           | Help
+          | NumProcs Int
           deriving (Show,Eq)
                 
 options :: [OptDescr Flag]
@@ -43,6 +45,7 @@ options =
      , Option [] ["desktop"] (NoArg (SetMode Desktop)) "desktop-sized benchmarks"
      , Option [] ["quick"]   (NoArg (SetMode Quick))   "(default) quick testing"
      , Option ['h'] ["help"] (NoArg Help)              "report this help message"
+     , Option ['n'] ["nproc"] (ReqArg (NumProcs . read) "N")  "override the number of processors (max threads)"
 
      , Option [] ["sparks"]  (NoArg (SetSched Sparks)) "add this scheduler (default is all schedulers)"
      , Option [] ["direct"]  (NoArg (SetSched Direct)) "add this scheduler "       
@@ -62,6 +65,9 @@ main :: IO ()
 main = do
   args <- getArgs
   let (opts,nonopts,unrecog,errs) = getOpt' Permute options args
+
+  evaluate threadSelection
+
   -- The first arg is a kind of mode:
 
   let help1 = usageInfo ("USAGE: run_benchmark [options]\n"++
@@ -107,7 +113,7 @@ bls_quick ss =
    -- These don't match the naming convention at the moment:
  , futbench "matmult"      [] ss 
  , futbench "sumeuler"     [] ss 
- , futbench "sorting"      [] ss 
+-- , futbench "sorting"      [] ss 
  ]
 
 bls_desktop :: S.Set Sched -> [Benchmark DefaultParamMeaning]
@@ -123,7 +129,7 @@ bls_desktop ss =
    -- These don't match the naming convention at the moment:
  , futbench "matmult"      ["768", "0", "64"] ss 
  , futbench "sumeuler"     ["38", "8000", "100"] ss 
- , futbench "sorting"      ["cpu", "24", "8192"] ss 
+-- , futbench "sorting"      ["cpu", "24", "8192"] ss 
  ] ++ parfibRange ss
 
 -- | Parfib can vary wildly between schedulers. Thus we run it with a short timeout,
@@ -160,7 +166,7 @@ bls_server ss =
    -- These don't match the naming convention at the moment:
  , futbench "matmult"      (words "1024 0 64") ss 
  , futbench "sumeuler"     (words "38 16000 100") ss 
- , futbench "sorting"      ["cpu", "25", "8192"] ss 
+-- , futbench "sorting"      ["cpu", "25", "8192"] ss 
  ] ++ parfibRange ss
 
 -- Factor out boilerplate:
@@ -316,11 +322,18 @@ schedToCabalFlag s =
     LVishState -> "-flvish-state"
     None   -> ""
 
--- TODO: make this an option:
+-- TODO: make this an option, get rid of unsafePerformIO:
 threadSelection :: [Int]
 threadSelection = unsafePerformIO $ do
+  args <- getArgs
+  let (opts,nonopts,unrecog,errs) = getOpt' Permute options args
+  let loop [] = getNumProcessors
+      loop (NumProcs n:rst) = do putStrLn $" [overriding number of processors to "++show n++"]"
+                                 return n
+      loop (_:rst) = loop rst
+  p <- loop opts
+
   env <- getEnvironment
-  p   <- getNumProcessors
   case lookup "THREADS" env of
     Just ls -> return$ map read $ words ls
     -- Arbitrary default policy 
