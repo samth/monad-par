@@ -20,7 +20,7 @@
 
 -- This program uses CnC to calculate the accelerations of the bodies in a 3D system.
 
-import Control.Monad
+import Control.Monad as C
 import Data.Int
 import qualified Data.List as List
 import qualified Data.Array as A
@@ -112,7 +112,7 @@ run n = runPar $
            let initVecs = A.array (0,n-1) [ (i, genVector i) | i <- [0..n-1] ]
 #endif
 
-	   forM_ [1..n] $ \ t -> fork (compute initVecs accels t)
+	   C.forM_ [1..n] $ \ t -> fork (compute initVecs accels t)
 
            sequence (List.map (\i -> get (accels A.! i)) [1..n])
 

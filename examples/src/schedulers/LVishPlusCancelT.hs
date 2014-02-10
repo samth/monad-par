@@ -15,7 +15,7 @@ import Control.LVish.CancelT
 
 type Par d s a = CancelT (L.Par d s) a
 
-runPar :: (forall s . Par L.Det s a) -> a
+runPar :: (forall s . Par (L.Ef L.P L.G L.NF L.B L.NI) s a) -> a
 runPar m =
   L.runPar $ 
   runCancelT m 

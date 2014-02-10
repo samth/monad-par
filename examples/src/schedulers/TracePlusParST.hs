@@ -10,10 +10,9 @@ module TracePlusParST
        ) where
 
 import qualified Control.Monad.Par.Scheds.Trace as T
-import Control.Par.Class
+import Control.Par.Class hiding (forM_)
 import Control.Par.ST
 import qualified Control.Monad.State.Strict as S
-
 type Par d s a = ParST (STUnit s) T.Par a
 -- type Par d s1 s0 a = ParST (STUnit s1) (L.Par d s0) a
 
