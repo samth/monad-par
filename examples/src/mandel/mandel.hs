@@ -26,13 +26,13 @@ import qualified Data.Vector.Storable as V
 
 #ifdef NEW_GENERIC
 import qualified Data.Par as C
-import qualified Data.Par.Range as C
+import qualified Data.Par.Range as R
 import Control.Par.Class
-parMapReduceRangeThresh :: (NFData a, ParFuture p, FutContents p a)
-                        => Int -> C.InclusiveRange -> (Int -> p a) -> (a -> a -> p a) -> a -> p a
-parMapReduceRangeThresh = C.parMapReduceThresh
+-- parMapReduceRangeThresh :: (NFData a, ParFuture p, FutContents p a)
+--                         => Int -> C.Range -> (Int -> p a) -> (a -> a -> p a) -> a -> p a
+-- parMapReduceRangeThresh thrsh rng fn1 fn2 init = C.pmapReduce
 #else
-import Control.Monad.Par.Combinator as C
+#error "mandel.hs: Requires NEW_GENERIC now."
 #endif
 
 
@@ -69,7 +69,7 @@ leftmost (MkNode l _) = leftmost l
 runMandel :: Double -> Double -> Double -> Double -> Int -> Int -> Int -> Par (AList [Int])
 runMandel minX minY maxX maxY winX winY max_depth = do
   -- This version does a ROW at a time in parallel:
-  A.parBuildThreshM threshold (C.InclusiveRange 0 (winY-1)) $ \y -> 
+  A.parBuildThreshM threshold (R.InclusiveRange 0 (winY-1)) $ \y -> 
        do let l = [ mandelStep y x | x <- [0.. winX-1] ]
           deepseq l (return l)
 
@@ -79,7 +79,7 @@ runMandel minX minY maxX maxY winX winY max_depth = do
 runMandel minX minY maxX maxY winX winY max_depth = do
   -- Auto-partitioning version.  A bit worse:
   -- C.parMapReduceRange (C.InclusiveRange 0 (winY-1)) 
-  parMapReduceRangeThresh threshold (C.InclusiveRange 0 (winY-1)) 
+  C.pmapReduce (C.InclusiveRange 0 (winY-1) threshold) 
      (\y -> 
        do
           let vec = V.generate winX (\x -> mandelStep y x)
