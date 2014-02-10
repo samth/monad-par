@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE TypeFamilies, DataKinds, ConstraintKinds #-}
 {-# OPTIONS_GHC -O2 #-}
 import Data.Int
 import System.Environment
