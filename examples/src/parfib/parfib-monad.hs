@@ -3,6 +3,7 @@
 import Data.Int
 import System.Environment
 import GHC.Conc
+import Control.Par.EffectSigs
 #ifdef PARSCHED 
 import PARSCHED
 #else
@@ -19,12 +20,14 @@ fib x = fib (x-2) + fib (x-1)
 
 #ifdef OLDTYPES
 #define PAR Par
+#define CONSTRAINT ()
 #else
-#define PAR Par d s
+#define PAR Par e s
+#define CONSTRAINT (HasPut e, HasGet e)
 #endif
 
 -- Par monad version:
-parfib1 :: FibType -> PAR FibType
+parfib1 :: CONSTRAINT => FibType -> PAR FibType
 parfib1 n | n < 2 = return 1
 parfib1 n = do 
 --    xf <- spawn1_ parfib1 (n-1)
@@ -34,7 +37,7 @@ parfib1 n = do
     return (x+y)
 
 -- Par monad version, with threshold:
-parfib1B :: FibType -> FibType -> PAR FibType
+parfib1B :: CONSTRAINT => FibType -> FibType -> PAR FibType
 parfib1B n c | n <= c = return $ fib n
 parfib1B n c = do 
     xf <- spawn_$ parfib1B (n-1) c
@@ -43,7 +46,7 @@ parfib1B n c = do
     return (x+y)
 
 -- Gratuitously nested Par monad version:
-parfibNest :: FibType -> FibType -> PAR FibType
+parfibNest :: CONSTRAINT => FibType -> FibType -> PAR FibType
 parfibNest n c | n <= c = return $ fib n
 parfibNest n c = do 
     xf <- spawnP $ runPar $ helper (n-1) c
@@ -53,7 +56,7 @@ parfibNest n c = do
     return (x+y)
  where 
   -- Alternate between nesting and regular spawning:
-  helper :: FibType -> FibType -> PAR FibType
+  helper :: CONSTRAINT => FibType -> FibType -> PAR FibType
   helper n c | n <= c = return $ fib n
   helper n c = do 
     xf <- spawn_$ parfibNest (n-1) c

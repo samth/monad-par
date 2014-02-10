@@ -129,19 +129,19 @@ cat >> $CABALFILE <<EOF
      cpp-options:     -DPARSCHED=Control.Monad.Par.Meta.NUMAOnly
 
   if flag(lvish)
-     build-depends:   lvish >= 1.1.1.5
+     build-depends:   lvish >= 2.0
      cpp-options:     -DPARSCHED=Control.LVish
 
   if flag(lvish-state)
-     build-depends:   lvish >= 1.1.1.5
+     build-depends:   lvish >= 2.0
      cpp-options:     -DPARSCHED=LVishPlusStateT
 
   if flag(lvish-rng)
-     build-depends:   lvish >= 1.1.1.5
+     build-depends:   lvish >= 2.0
      cpp-options:     -DPARSCHED=LVishPlusRNG
 
   if flag(lvish-cancel)
-     build-depends:   lvish >= 1.1.1.5
+     build-depends:   lvish >= 2.0
      cpp-options:     -DPARSCHED=LVishPlusCancelT
 
   -- ELSE would be better here:
