@@ -23,16 +23,9 @@ executable $PREFIX-$NAME
 
   build-depends:     $COMMON_DEPS
 
-  -- Select whether to use the newer or older (deprecated) generic interfaces:
-  if (flag(newgeneric) \
-     || flag(trace-st) \
-     || flag(lvish) || flag(lvish-state) || flag(lvish-rng) || flag(lvish-cancel)  )
-  {
-    build-depends:     par-classes, par-collections, par-transformers
-    cpp-options:      -DNEW_GENERIC
-  } else {
-    build-depends:     abstract-par, monad-par-extras
-  }
+  -- Use newer rather than older (deperecated) generic interfaces:
+  build-depends:     par-classes, par-collections, par-transformers
+  cpp-options:      -DNEW_GENERIC
 
   if ( flag(lvish) || flag(lvish-state) || flag(lvish-rng) || flag(lvish-cancel) \
      || flag(trace-st) \
@@ -56,10 +49,6 @@ name:                $NAME
 version:             0.3.9
 build-type:          Simple
 cabal-version:       >=1.8
-
-flag newgeneric
-  default:           False
-  description: Use new generic interfaces rather than old.
 
 flag usegeneric
   default:           False
